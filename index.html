@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Absen Karyawan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(120deg, #e0f7fa, #f1f8e9);
+      color: #333;
+      animation: fadeIn 1s ease-in;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1565c0;
+      text-shadow: 1px 1px 2px #90caf9;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 900px;
+      background: #fff;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      animation: fadeUp 0.8s ease-in;
+    }
+
+    .card:hover {
+      transform: scale(1.01);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      animation: fadeIn 1s;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    th {
+      background: #42a5f5;
+      color: white;
+    }
+
+    tr:hover td {
+      background: #e3f2fd;
+    }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #43a047;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #2e7d32;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📋 Web Absen Karyawan</h2>
+
+  <!-- Data Karyawan -->
+  <div class="card">
+    <h3>👨‍💼 Daftar Karyawan</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>NIK</th>
+          <th>Nama Lengkap</th>
+          <th>Jabatan</th>
+          <th>Divisi</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="karyawanTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Data Absen -->
+  <div class="card">
+    <h3>🕒 Data Presensi</h3>
+    <button onclick="downloadCSV()">💾 Download Data Absen (CSV)</button>
+    <table>
+      <thead>
+        <tr>
+          <th>NIK</th>
+          <th>Nama Lengkap</th>
+          <th>Jabatan</th>
+          <th>Divisi</th>
+          <th>Tanggal</th>
+          <th>Hari</th>
+          <th>Waktu</th>
+        </tr>
+      </thead>
+      <tbody id="absenTable"></tbody>
+    </table>
+  </div>
+
+<script>
+  // 📌 Data Karyawan (contoh, bisa ditambah manual)
+  const karyawan = [
+    { nik: "1001", nama: "Budi Santoso", jabatan: "Staff IT", divisi: "Teknologi" },
+    { nik: "1002", nama: "Ani Lestari", jabatan: "HRD", divisi: "SDM" },
+    { nik: "1003", nama: "Rizky Pratama", jabatan: "Supervisor", divisi: "Operasional" },
+    { nik: "1004", nama: "Siti Aminah", jabatan: "Admin", divisi: "Keuangan" }
+  ];
+
+  let dataAbsen = [];
+
+  // 📌 Tampilkan daftar karyawan
+  function loadKaryawan() {
+    const tbody = document.getElementById("karyawanTable");
+    tbody.innerHTML = "";
+    karyawan.forEach(kar => {
+      const row = `<tr>
+        <td>${kar.nik}</td>
+        <td>${kar.nama}</td>
+        <td>${kar.jabatan}</td>
+        <td>${kar.divisi}</td>
+        <td><button onclick="absen('${kar.nik}')">Absen</button></td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  }
+
+  // 📌 Fungsi Absen
+  function absen(nik) {
+    const kar = karyawan.find(k => k.nik === nik);
+    if (!kar) return;
+
+    // Cek apakah sudah absen
+    if (dataAbsen.find(a => a.nik === nik)) {
+      alert(`${kar.nama} sudah absen!`);
+      return;
+    }
+
+    const now = new Date();
+    const tanggal = now.toISOString().split("T")[0];
+    const hari = now.toLocaleDateString("id-ID", { weekday: "long" });
+    const waktu = now.toLocaleTimeString("id-ID");
+
+    const absenData = {
+      ...kar,
+      tanggal,
+      hari,
+      waktu
+    };
+
+    dataAbsen.push(absenData);
+    updateAbsenTable();
+    alert(`${kar.nama} berhasil absen pada ${hari}, ${tanggal} jam ${waktu}`);
+  }
+
+  // 📌 Update tabel absen
+  function updateAbsenTable() {
+    const tbody = document.getElementById("absenTable");
+    tbody.innerHTML = "";
+    dataAbsen.forEach(a => {
+      const row = `<tr>
+        <td>${a.nik}</td>
+        <td>${a.nama}</td>
+        <td>${a.jabatan}</td>
+        <td>${a.divisi}</td>
+        <td>${a.tanggal}</td>
+        <td>${a.hari}</td>
+        <td>${a.waktu}</td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  }
+
+  // 📌 Download data absen ke CSV
+  function downloadCSV() {
+    let csv = "NIK,Nama Lengkap,Jabatan,Divisi,Tanggal,Hari,Waktu\n";
+    dataAbsen.forEach(a => {
+      csv += `${a.nik},${a.nama},${a.jabatan},${a.divisi},${a.tanggal},${a.hari},${a.waktu}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "data_absen.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Load awal
+  loadKaryawan();
+</script>
+
+</body>
+</html>
